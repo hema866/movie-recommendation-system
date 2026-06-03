@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Personalized Movie Recommendation System</title>
+
+    <style>
+
+        body{
+            margin:0;
+            font-family:Arial,sans-serif;
+            background:#0f172a;
+            color:white;
+        }
+
+        header{
+            background:linear-gradient(90deg,#7c3aed,#2563eb);
+            padding:20px;
+            text-align:center;
+        }
+
+        h1{
+            margin:0;
+        }
+
+        .container{
+            padding:20px;
+        }
+
+        .search-box{
+            text-align:center;
+            background:#1e293b;
+            padding:20px;
+            border-radius:15px;
+            margin-bottom:30px;
+        }
+
+        input,select,button{
+            padding:12px;
+            margin:8px;
+            border:none;
+            border-radius:8px;
+        }
+
+        input,select{
+            width:220px;
+        }
+
+        button{
+            background:#7c3aed;
+            color:white;
+            cursor:pointer;
+        }
+
+        button:hover{
+            background:#5b21b6;
+        }
+
+        .section-title{
+            margin-top:40px;
+            margin-bottom:15px;
+            text-align:center;
+        }
+
+        .movie-grid{
+            display:flex;
+            flex-wrap:wrap;
+            gap:20px;
+            justify-content:center;
+        }
+
+        .card{
+            width:260px;
+            background:white;
+            color:black;
+            border-radius:15px;
+            overflow:hidden;
+            box-shadow:0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        .card img{
+            width:100%;
+            height:320px;
+            object-fit:cover;
+        }
+
+        .card-body{
+            padding:15px;
+        }
+
+        .rating{
+            color:green;
+            font-weight:bold;
+        }
+
+        h3{
+            margin-top:20px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎬 AI Personalized Movie Recommendation System</h1>
+</header>
+
+<div class="container">
+
+    <div class="search-box">
+
+        <h3>🎥 Movie Recommendation</h3>
+
+        <input
+            type="text"
+            id="movie"
+            placeholder="Enter Movie Name">
+
+        <button onclick="getRecommendation()">
+            Recommend Movies
+        </button>
+
+        <br>
+
+        <h3>😊 Mood Recommendation</h3>
+
+        <select id="mood">
+            <option value="happy">Happy 😊</option>
+            <option value="sad">Sad 😢</option>
+            <option value="romantic">Romantic ❤️</option>
+            <option value="action">Action 🔥</option>
+        </select>
+
+        <button onclick="getMood()">
+            Mood Recommendation
+        </button>
+
+        <br>
+
+        <h3>🌍 Language Filter</h3>
+
+        <select id="language">
+            <option value="hindi">Hindi</option>
+            <option value="tamil">Tamil</option>
+            <option value="telugu">Telugu</option>
+            <option value="malayalam">Malayalam</option>
+            <option value="kannada">Kannada</option>
+            <option value="marathi">Marathi</option>
+            <option value="punjabi">Punjabi</option>
+            <option value="urdu">Urdu</option>
+        </select>
+
+        <button onclick="getLanguageMovies()">
+            Get Movies
+        </button>
+
+        <br>
+
+        <h3>📅 Release Year Range</h3>
+
+<select id="yearFrom">
+    <option value="2015">2015</option>
+    <option value="2016">2016</option>
+    <option value="2017">2017</option>
+    <option value="2018">2018</option>
+    <option value="2019">2019</option>
+    <option value="2020">2020</option>
+</select>
+
+<select id="yearTo">
+    <option value="2021">2021</option>
+    <option value="2022">2022</option>
+    <option value="2023">2023</option>
+    <option value="2024">2024</option>
+    <option value="2025">2025</option>
+</select>
+
+<button>
+Search
+</button>
+
+
+
+
+        <br>
+
+        <h3>⭐ Rating Filter</h3>
+
+        <input
+            type="number"
+            step="0.1"
+            id="rating"
+            placeholder="Minimum Rating">
+
+        <button onclick="getRatingMovies()">
+            Search Rating
+        </button>
+
+        <br>
+
+        <h3>🎯 Hybrid Recommendation</h3>
+
+        <button onclick="getHybrid()">
+            Hybrid Recommendation
+        </button>
+
+    </div>
+
+    <h2 class="section-title">🎥 Results</h2>
+    <div id="results" class="movie-grid"></div>
+
+    <h2 class="section-title">⭐ Top Rated Movies</h2>
+    <div id="topMovies" class="movie-grid"></div>
+
+    <h2 class="section-title">🔥 Trending Movies</h2>
+    <div id="trendingMovies" class="movie-grid"></div>
+
+</div>
+
+<script>
+
+function createCards(data,target){
+
+    let html="";
+
+    if(data.length===0){
+        html="<h2>No Movies Found</h2>";
+    }
+
+    data.forEach(movie=>{
+
+        html += `
+
+        <div class="card">
+
+            <img src="${movie.Poster}">
+            <div class="card-body">
+
+                <h3>${movie.Title}</h3>
+
+                <p><b>Genre:</b> ${movie.Genre || "-"}</p>
+
+                <p><b>Language:</b> ${movie.Language || "-"}</p>
+
+                <p class="rating">
+                ⭐ ${movie.Rating || "-"}
+                </p>
+
+            </div>
+
+        </div>
+
+        `;
+    });
+
+    document.getElementById(target).innerHTML = html;
+}
+
+function getRecommendation(){
+
+    let movie =
+    document.getElementById("movie").value;
+
+    fetch(`/recommend?movie=${movie}`)
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        let formatted=[];
+
+        data.forEach(m=>{
+
+            formatted.push({
+                Title:m,
+                Genre:"Similar Movie",
+                Rating:"--"
+            });
+
+        });
+
+        createCards(formatted,"results");
+
+    });
+
+}
+
+function getMood(){
+
+    let mood =
+    document.getElementById("mood").value;
+
+    fetch(`/mood?mood=${mood}`)
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        createCards(data,"results");
+
+    });
+
+}
+
+function getLanguageMovies(){
+
+    let language =
+    document.getElementById("language").value;
+
+    fetch(`/filter?language=${language}`)
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        createCards(data,"results");
+
+    });
+
+}
+
+function getYearMovies(){
+
+    let year =
+    document.getElementById("year").value;
+
+    fetch(`/filter?year=${year}`)
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        createCards(data,"results");
+
+    });
+
+}
+
+function getRatingMovies(){
+
+    let rating =
+    document.getElementById("rating").value;
+
+    fetch(`/filter?rating=${rating}`)
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        createCards(data,"results");
+
+    });
+
+}
+
+function getHybrid(){
+
+    let movie =
+    document.getElementById("movie").value;
+
+    let mood =
+    document.getElementById("mood").value;
+
+    fetch(`/hybrid?movie=${movie}&mood=${mood}`)
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        let html="";
+
+        data.forEach(movie=>{
+
+            html += `
+
+            <div class="card">
+
+                <div class="card-body">
+
+                    <h3>${movie}</h3>
+
+                </div>
+
+            </div>
+
+            `;
+
+        });
+
+        document.getElementById("results").innerHTML=html;
+
+    });
+
+}
+
+function loadTopMovies(){
+
+    fetch('/top')
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        createCards(data,"topMovies");
+
+    });
+
+}
+
+function loadTrendingMovies(){
+
+    fetch('/trending')
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        createCards(data,"trendingMovies");
+
+    });
+
+}
+
+loadTopMovies();
+loadTrendingMovies();
+
+</script>
+
+</body>
+</html>
