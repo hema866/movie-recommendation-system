@@ -44,13 +44,15 @@ def mood():
 
     mood_name = request.args.get('mood')
 
-    if not mood_name:
-        return jsonify([])
+    print("Mood received:", mood_name)
 
     result = mood_recommend(mood_name)
 
-    return jsonify(result.to_dict('records'))
+    print("Movies returned:")
+    for movie in result:
+        print(movie["Title"])
 
+    return jsonify(result)
 
 # -----------------------------
 # HYBRID RECOMMENDATION
@@ -138,3 +140,19 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=5000
     )
+
+if __name__ == "__main__":
+
+    print("\nHAPPY MOVIES")
+    print(mood_recommend("happy"))
+
+    print("\nSAD MOVIES")
+    print(mood_recommend("sad"))
+
+    print("\nROMANTIC MOVIES")
+    print(mood_recommend("romantic"))
+
+    print("\nACTION MOVIES")
+    print(mood_recommend("action"))
+
+    app.run(debug=True)

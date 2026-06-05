@@ -175,7 +175,7 @@
     <option value="2025">2025</option>
 </select>
 
-<button>
+<button onclick="getYearMovies()">
 Search
 </button>
 
@@ -219,43 +219,56 @@ Search
 
 <script>
 
-function createCards(data,target){
+function createCards(data, target) {
 
-    let html="";
+    let html = "";
 
-    if(data.length===0){
-        html="<h2>No Movies Found</h2>";
+    if (!data || data.length === 0) {
+        document.getElementById(target).innerHTML = "<h2>No Movies Found</h2>";
+        return;
     }
 
-    data.forEach(movie=>{
+    data.forEach(movie => {
+
+        console.log(movie);
+
+        // ✅ SUPPORT BOTH APIs (TMDB + OMDb)
+        const poster =
+            movie.poster_path
+                ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                : movie.Poster && movie.Poster !== "N/A"
+                    ? movie.Poster
+                    : "https://via.placeholder.com/500x750?text=No+Poster";
+
+        const title = movie.title || movie.Title || "Untitled";
+
+        const genre = movie.Genre || "-";
+        const language = movie.Language || "-";
+        const rating = movie.Rating || movie.imdbRating || "-";
 
         html += `
-
         <div class="card">
 
-            <img src="${movie.Poster}">
+            <img src="${poster}" alt="${title}">
+
             <div class="card-body">
 
-                <h3>${movie.Title}</h3>
+                <h3>${title}</h3>
 
-                <p><b>Genre:</b> ${movie.Genre || "-"}</p>
+                <p><b>Genre:</b> ${genre}</p>
 
-                <p><b>Language:</b> ${movie.Language || "-"}</p>
+                <p><b>Language:</b> ${language}</p>
 
-                <p class="rating">
-                ⭐ ${movie.Rating || "-"}
-                </p>
+                <p class="rating">⭐ ${rating}</p>
 
             </div>
 
         </div>
-
         `;
     });
 
     document.getElementById(target).innerHTML = html;
 }
-
 function getRecommendation(){
 
     let movie =
@@ -321,19 +334,14 @@ function getLanguageMovies(){
 
 function getYearMovies(){
 
-    let year =
-    document.getElementById("year").value;
+    let yearFrom = document.getElementById("yearFrom").value;
+    let yearTo = document.getElementById("yearTo").value;
 
-    fetch(`/filter?year=${year}`)
-
-    .then(res=>res.json())
-
-    .then(data=>{
-
-        createCards(data,"results");
-
+    year = request.args.get('year')
+    .then(res => res.json())
+    .then(data => {
+        createCards(data, "results");
     });
-
 }
 
 function getRatingMovies(){
@@ -352,7 +360,6 @@ function getRatingMovies(){
     });
 
 }
-
 function getHybrid(){
 
     let movie =
@@ -363,31 +370,11 @@ function getHybrid(){
 
     fetch(`/hybrid?movie=${movie}&mood=${mood}`)
 
-    .then(res=>res.json())
+    .then(res => res.json())
 
-    .then(data=>{
+    .then(data => {
 
-        let html="";
-
-        data.forEach(movie=>{
-
-            html += `
-
-            <div class="card">
-
-                <div class="card-body">
-
-                    <h3>${movie}</h3>
-
-                </div>
-
-            </div>
-
-            `;
-
-        });
-
-        document.getElementById("results").innerHTML=html;
+        createCards(data, "results");
 
     });
 

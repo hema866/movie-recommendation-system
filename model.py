@@ -140,7 +140,7 @@ def recommend(movie):
 # -----------------------------
 def mood_recommend(mood):
 
-    mood = mood.lower()
+    mood = mood.lower().strip()
 
     if mood == "happy":
         data = movies[
@@ -179,20 +179,27 @@ def mood_recommend(mood):
         ]
 
     else:
-        data = movies.sample(10)
+        data = movies
+
+    # Select up to 10 random movies
+    if len(data) > 10:
+        data = data.sample(n=10)
+    else:
+        data = data.sample(frac=1)
+
+    print(f"\nSelected Mood: {mood}")
+    print(data[['Title', 'Genre']])
 
     result = []
 
-    for _, row in data.head(10).iterrows():
+    for _, row in data.iterrows():
 
         result.append({
-
             "Title": row['Title'],
             "Genre": row['Genre'],
             "Language": row['Language'],
             "Rating": row['Rating'],
             "Poster": fetch_poster(row['Title'])
-
         })
 
     return result
@@ -207,27 +214,36 @@ def hybrid_recommend(movie, mood):
 
     mood_movies = mood_recommend(mood)
 
-    mood_titles = mood_movies[
-        'Title'
-    ].tolist()
+    mood_titles = [
+        m["Title"]
+        for m in mood_movies
+    ]
 
     final_movies = []
 
-    for m in similar_movies:
+    for movie_data in similar_movies:
 
-        if m in mood_titles:
+        if movie_data["Title"] in mood_titles:
 
-            final_movies.append(m)
+            final_movies.append(movie_data)
 
     if len(final_movies) == 0:
 
-        final_movies = (
-            similar_movies +
-            mood_titles
-        )[:10]
+        final_movies = similar_movies[:5]
+
+        for mood_movie in mood_movies:
+
+            if mood_movie["Title"] not in [
+                m["Title"]
+                for m in final_movies
+            ]:
+
+                final_movies.append(mood_movie)
+
+            if len(final_movies) >= 10:
+                break
 
     return final_movies
-
 
 # -----------------------------
 # LANGUAGE FILTER
