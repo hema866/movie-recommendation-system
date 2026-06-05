@@ -134,25 +134,15 @@ def filter_movies():
 # -----------------------------
 # RUN APP
 # -----------------------------
-if __name__ == '__main__':
+# -----------------------------
+# RUN APP
+# -----------------------------
+# -----------------------------
+# RUN APP
+# -----------------------------
+if __name__ == "__main__":
     app.run(
         debug=True,
-        host='0.0.0.0',
+        host="0.0.0.0",
         port=5000
     )
-
-if __name__ == "__main__":
-
-    print("\nHAPPY MOVIES")
-    print(mood_recommend("happy"))
-
-    print("\nSAD MOVIES")
-    print(mood_recommend("sad"))
-
-    print("\nROMANTIC MOVIES")
-    print(mood_recommend("romantic"))
-
-    print("\nACTION MOVIES")
-    print(mood_recommend("action"))
-
-    app.run(debug=True)
