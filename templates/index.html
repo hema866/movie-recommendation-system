@@ -62,18 +62,19 @@
         }
 
         .movie-grid{
-            display:flex;
-            flex-wrap:wrap;
+            display:grid;
+            grid-template-columns:repeat(5,1fr);
             gap:20px;
-            justify-content:center;
+            margin-top:20px;
         }
 
         .card{
-            width:260px;
+            width:100%;
             background:white;
             color:black;
             border-radius:15px;
             overflow:hidden;
+            grid-template-columns:repeat(5,1fr);
             box-shadow:0 4px 10px rgba(0,0,0,0.4);
         }
 
@@ -95,6 +96,33 @@
         h3{
             margin-top:20px;
         }
+        .filter-row{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+
+    margin-top:20px;
+
+}
+
+.filter-row select{
+
+    width:150px;
+
+}
+
+.filter-row input{
+
+    width:120px;
+
+}
 
     </style>
 </head>
@@ -112,112 +140,236 @@
         <h3>🎥 Movie Recommendation</h3>
 
         <input
-            type="text"
-            id="movie"
-            placeholder="Enter Movie Name">
+    type="text"
+    id="movie"
+    placeholder="Enter Movie Name">
+
+<button onclick="getRecommendation()">
+    Recommend Movies
+</button>
+
+<button onclick="startVoiceSearch()">
+    🎤 Voice Search
+</button>
+
+<select id="voiceLang">
+    <option value="en-US">English</option>
+    <option value="ta-IN">Tamil</option>
+    <option value="hi-IN">Hindi</option>
+    <option value="te-IN">Telugu</option>
+</select>
+
+        <div id="suggestions"
+             style="
+               background:white;
+               color:black;
+               width:220px;
+               margin:auto;
+               border-radius:5px;
+               max-height:200px;
+               overflow-y:auto;">
+        </div>    
 
         <button onclick="getRecommendation()">
             Recommend Movies
         </button>
 
-        <br>
+        <hr>
 
-        <h3>😊 Mood Recommendation</h3>
+<div class="filter-row">
 
-        <select id="mood">
-            <option value="happy">Happy 😊</option>
-            <option value="sad">Sad 😢</option>
-            <option value="romantic">Romantic ❤️</option>
-            <option value="action">Action 🔥</option>
-        </select>
+    <select id="mood">
 
-        <button onclick="getMood()">
-            Mood Recommendation
-        </button>
+        <option value="">Mood</option>
 
-        <br>
+        <option value="happy">Happy 😊</option>
 
-        <h3>🌍 Language Filter</h3>
+        <option value="sad">Sad 😢</option>
 
-        <select id="language">
-            <option value="hindi">Hindi</option>
-            <option value="tamil">Tamil</option>
-            <option value="telugu">Telugu</option>
-            <option value="malayalam">Malayalam</option>
-            <option value="kannada">Kannada</option>
-            <option value="marathi">Marathi</option>
-            <option value="punjabi">Punjabi</option>
-            <option value="urdu">Urdu</option>
-        </select>
+        <option value="romantic">Romantic ❤️</option>
 
-        <button onclick="getLanguageMovies()">
-            Get Movies
-        </button>
+        <option value="action">Action 🔥</option>
 
-        <br>
+    </select>
 
-        <h3>📅 Release Year Range</h3>
+    <select id="language">
 
-<select id="yearFrom">
-    <option value="2015">2015</option>
-    <option value="2016">2016</option>
-    <option value="2017">2017</option>
-    <option value="2018">2018</option>
-    <option value="2019">2019</option>
-    <option value="2020">2020</option>
-</select>
+        <option value="">Language</option>
 
-<select id="yearTo">
-    <option value="2021">2021</option>
-    <option value="2022">2022</option>
-    <option value="2023">2023</option>
-    <option value="2024">2024</option>
-    <option value="2025">2025</option>
-</select>
+        <option value="hindi">Hindi</option>
 
-<button onclick="getYearMovies()">
-Search
-</button>
+        <option value="tamil">Tamil</option>
 
+        <option value="telugu">Telugu</option>
 
+        <option value="malayalam">Malayalam</option>
 
+        <option value="kannada">Kannada</option>
 
-        <br>
+    </select>
 
-        <h3>⭐ Rating Filter</h3>
+    <select id="year">
 
-        <input
-            type="number"
-            step="0.1"
-            id="rating"
-            placeholder="Minimum Rating">
+        <option value="2026">2026</option>
+<option value="2025">2025</option>
+<option value="2024">2024</option>
+<option value="2023">2023</option>
+<option value="2022">2022</option>
+<option value="2021">2021</option>
+<option value="2020">2020</option>
+<option value="2019">2019</option>
+<option value="2018">2018</option>
+<option value="2017">2017</option>
+<option value="2016">2016</option>
+<option value="2015">2015</option>
 
-        <button onclick="getRatingMovies()">
-            Search Rating
-        </button>
+    </select>
 
-        <br>
+    <input
+        type="number"
+        step="0.1"
+        id="rating"
+        placeholder="Rating">
 
-        <h3>🎯 Hybrid Recommendation</h3>
+    <button onclick="applyFilters()">
 
-        <button onclick="getHybrid()">
-            Hybrid Recommendation
-        </button>
+        Apply Filters
 
-    </div>
+    </button>
 
-    <h2 class="section-title">🎥 Results</h2>
+</div>
+
+    
+    <h2 class="section-title">🎬 Selected Movie</h2>
+    <div id="selectedMovie" class="movie-grid"></div>
+
+    <h2 class="section-title">🎯 Similar Movies</h2>
     <div id="results" class="movie-grid"></div>
 
     <h2 class="section-title">⭐ Top Rated Movies</h2>
     <div id="topMovies" class="movie-grid"></div>
 
+<div style="text-align:center;margin-top:20px;">
+    <button
+    id="topMoreBtn"
+    onclick="loadMoreTop()">
+    Show More
+    </button>
+</div>
+
     <h2 class="section-title">🔥 Trending Movies</h2>
     <div id="trendingMovies" class="movie-grid"></div>
 
+<div style="text-align:center;margin-top:20px;">
+    <button
+    id="trendingMoreBtn"
+    onclick="loadMoreTrending()">
+    Show More
+    </button>
+</div>
+    
+    <h2 class="section-title">👻 Horror Movies</h2>
+    <div id="horrorMovies" class="movie-grid"></div>
+
+<div style="text-align:center;margin-top:20px;">
+    <button
+    id="horrorMoreBtn"
+    onclick="loadMoreHorror()">
+    Show More
+    </button>
 </div>
 
+    <h2 class="section-title">😂 Comedy Movies</h2>
+    <div id="comedyMovies" class="movie-grid"></div>
+
+<div style="text-align:center;margin-top:20px;">
+    <button
+    id="comedyMoreBtn"
+    onclick="loadMoreComedy()">
+    Show More
+    </button>
+</div>
+
+    <h2 class="section-title">🚀 Sci-Fi Movies</h2>
+    <div id="scifiMovies" class="movie-grid"></div>
+
+<div style="text-align:center;margin-top:20px;">
+    <button
+    id="scifiMoreBtn"
+    onclick="loadMoreScifi()">
+    Show More
+    </button>
+</div>
+
+    <h2 class="section-title">❤️ Romance Movies</h2>
+    <div id="romanceMovies" class="movie-grid"></div>
+
+<div style="text-align:center;margin-top:20px;">
+    <button
+    id="romanceMoreBtn"
+    onclick="loadMoreRomance()">
+    Show More
+    </button>
+</div>
+
+    <h2 class="section-title">⚔️ Action Movies</h2>
+
+<div id="actionMovies" class="movie-grid"></div>
+
+<div style="text-align:center;margin-top:20px;">
+    <button
+    id="actionMoreBtn"
+    onclick="loadMoreAction()">
+
+    Show More
+    </button>
+</div>
 <script>
+
+let topPage = 1;
+let trendingPage = 1;
+let horrorPage = 1;
+let comedyPage = 1;
+let scifiPage = 1;
+let romancePage = 1;
+let actionPage = 1;
+
+function startVoiceSearch(){
+
+    if (!('webkitSpeechRecognition' in window)) {
+
+        alert("Voice Search not supported in this browser");
+
+        return;
+    }
+
+    const recognition =
+        new webkitSpeechRecognition();
+
+    recognition.lang =
+document.getElementById("voiceLang").value;
+
+    recognition.start();
+
+    recognition.onresult = function(event){
+
+        const movieName =
+            event.results[0][0].transcript;
+
+        document
+        .getElementById("movie")
+        .value = movieName;
+
+        getRecommendation();
+
+    };
+
+    recognition.onerror = function(){
+
+        alert("Voice recognition failed");
+    };
+
+}
 
 function createCards(data, target) {
 
@@ -269,10 +421,39 @@ function createCards(data, target) {
 
     document.getElementById(target).innerHTML = html;
 }
+
+function showSelectedMovie(movie){
+
+    fetch(`/movieinfo?movie=${movie}`)
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        if(data.Title){
+
+            createCards(
+                [data],
+                "selectedMovie"
+            );
+
+        }
+
+    });
+
+}
+
 function getRecommendation(){
 
     let movie =
     document.getElementById("movie").value;
+
+    if(movie.trim()===""){
+        alert("Please enter movie name");
+        return;
+    }
+
+    showSelectedMovie(movie);
 
     fetch(`/recommend?movie=${movie}`)
 
@@ -280,23 +461,16 @@ function getRecommendation(){
 
     .then(data=>{
 
-        let formatted=[];
-
-        data.forEach(m=>{
-
-            formatted.push({
-                Title:m,
-                Genre:"Similar Movie",
-                Rating:"--"
-            });
-
-        });
-
-        createCards(formatted,"results");
+        createCards(
+            data,
+            "results"
+        );
 
     });
 
 }
+
+
 
 function getMood(){
 
@@ -334,14 +508,22 @@ function getLanguageMovies(){
 
 function getYearMovies(){
 
-    let yearFrom = document.getElementById("yearFrom").value;
-    let yearTo = document.getElementById("yearTo").value;
+    let year =
+    document.getElementById("yearFrom").value;
 
-    year = request.args.get('year')
-    .then(res => res.json())
-    .then(data => {
-        createCards(data, "results");
+    fetch(`/filter?year=${year}`)
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        createCards(
+            data,
+            "results"
+        );
+
     });
+
 }
 
 function getRatingMovies(){
@@ -360,56 +542,396 @@ function getRatingMovies(){
     });
 
 }
-function getHybrid(){
 
-    let movie =
-    document.getElementById("movie").value;
+function applyFilters(){
 
-    let mood =
-    document.getElementById("mood").value;
+    let language =
+        document.getElementById(
+            "language"
+        ).value;
 
-    fetch(`/hybrid?movie=${movie}&mood=${mood}`)
+    let year =
+        document.getElementById(
+            "year"
+        ).value;
+
+    let rating =
+        document.getElementById(
+            "rating"
+        ).value;
+
+    fetch(
+        `/filter?language=${language}&year=${year}&rating=${rating}`
+    )
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        createCards(
+            data,
+            "results"
+        );
+
+    });
+
+}
+
+
+function loadTop(reset=false){
+
+    if(reset){
+
+        topPage = 1;
+
+        document.getElementById("topMovies").innerHTML = "";
+
+    }
+
+    fetch(`/top?page=${topPage}`)
 
     .then(res => res.json())
 
     .then(data => {
 
-        createCards(data, "results");
+        createCards(data.movies,"topMovies");
+
+        document.getElementById("topMoreBtn").style.display =
+            data.has_more ? "block" : "none";
 
     });
 
 }
 
-function loadTopMovies(){
+function loadMoreTop(){
 
-    fetch('/top')
+    topPage++;
+
+    loadTop();
+
+}
+
+
+function loadTrending(reset=false){
+
+    if(reset){
+
+        trendingPage = 1;
+
+        document
+        .getElementById("trendingMovies")
+        .innerHTML = "";
+
+    }
+
+    fetch(`/trending?page=${trendingPage}`)
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        createCards(
+            data.movies,
+            "trendingMovies"
+        );
+
+        document
+        .getElementById("trendingMoreBtn")
+        .style.display =
+            data.has_more ? "block" : "none";
+
+    });
+
+}
+
+function loadMoreTrending(){
+
+    trendingPage++;
+
+    loadTrending();
+
+}
+
+document
+.getElementById("movie")
+.addEventListener(
+"keyup",
+function(){
+
+    let query = this.value;
+
+    if(query.length < 2){
+
+        document
+        .getElementById("suggestions")
+        .innerHTML="";
+
+        return;
+    }
+
+    fetch(`/search?q=${query}`)
 
     .then(res=>res.json())
 
     .then(data=>{
 
-        createCards(data,"topMovies");
+        let html="";
+
+        data.forEach(movie=>{
+
+            html += `
+            <div
+            style="
+            padding:10px;
+            cursor:pointer;
+            border-bottom:1px solid #ddd"
+            onclick="
+            document.getElementById('movie').value='${movie.Title}';
+            document.getElementById('suggestions').innerHTML='';
+            ">
+
+            ${movie.Title}
+
+            </div>
+            `;
+
+        });
+
+        document
+        .getElementById("suggestions")
+        .innerHTML=html;
 
     });
 
-}
+});
+ 
 
-function loadTrendingMovies(){
+function loadGenreMovies(genre,target){
 
-    fetch('/trending')
+    fetch(`/genre/${genre}`)
 
     .then(res=>res.json())
 
     .then(data=>{
 
-        createCards(data,"trendingMovies");
+        createCards(
+            data.movies,
+            target
+        );
 
     });
 
 }
 
-loadTopMovies();
-loadTrendingMovies();
+function loadGenrePage(
+    genre,
+    target,
+    page,
+    buttonId,
+    reset=false
+){
+
+    if(reset){
+
+        document
+        .getElementById(target)
+        .innerHTML = "";
+
+    }
+
+    fetch(
+        `/genre/${genre}?page=${page}`
+    )
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        let html="";
+
+        data.movies.forEach(movie=>{
+
+            html += `
+
+            <div class="card">
+
+                <img src="${movie.Poster}">
+
+                <div class="card-body">
+
+                    <h3>${movie.Title}</h3>
+
+                    <p>${movie.Genre}</p>
+
+                    <p>⭐ ${movie.Rating}</p>
+
+                </div>
+
+            </div>
+
+            `;
+
+        });
+
+        document
+        .getElementById(target)
+        .innerHTML += html;
+
+        document
+        .getElementById(buttonId)
+        .style.display =
+            data.has_more
+            ? "inline-block"
+            : "none";
+
+    });
+
+}
+
+
+
+function loadHorror(reset=false){
+
+    if(reset) horrorPage=1;
+
+    loadGenrePage(
+        "Horror",
+        "horrorMovies",
+        horrorPage,
+        "horrorMoreBtn",
+        reset
+    );
+}
+
+function loadMoreHorror(){
+
+    horrorPage++;
+
+    loadHorror();
+
+}
+
+function loadHorror(reset=false){
+
+    if(reset) horrorPage=1;
+
+    loadGenrePage(
+        "Horror",
+        "horrorMovies",
+        horrorPage,
+        "horrorMoreBtn",
+        reset
+    );
+}
+
+function loadMoreHorror(){
+
+    horrorPage++;
+
+    loadHorror();
+
+}
+
+function loadComedy(reset=false){
+
+    if(reset) comedyPage=1;
+
+    loadGenrePage(
+        "Comedy",
+        "comedyMovies",
+        comedyPage,
+        "comedyMoreBtn",
+        reset
+    );
+}
+
+function loadMoreComedy(){
+
+    comedyPage++;
+
+    loadComedy();
+
+}
+
+function loadScifi(reset=false){
+
+    if(reset) scifiPage=1;
+
+    loadGenrePage(
+        "Sci-Fi",
+        "scifiMovies",
+        scifiPage,
+        "scifiMoreBtn",
+        reset
+    );
+}
+
+function loadMoreScifi(){
+
+    scifiPage++;
+
+    loadScifi();
+
+}
+
+function loadRomance(reset=false){
+
+    if(reset) romancePage=1;
+
+    loadGenrePage(
+        "Romance",
+        "romanceMovies",
+        romancePage,
+        "romanceMoreBtn",
+        reset
+    );
+}
+
+function loadMoreRomance(){
+
+    romancePage++;
+
+    loadRomance();
+
+}
+
+function loadAction(reset=false){
+
+    if(reset) actionPage=1;
+
+    loadGenrePage(
+        "Action",
+        "actionMovies",
+        actionPage,
+        "actionMoreBtn",
+        reset
+    );
+}
+
+function loadMoreAction(){
+
+    actionPage++;
+
+    loadAction();
+
+}
+window.onload = function(){
+
+    loadTop(true);
+
+    loadTrending(true);
+
+    loadHorror(true);
+
+    loadComedy(true);
+
+    loadScifi(true);
+
+    loadRomance(true);
+
+    loadAction(true);
+
+};
 
 </script>
 

@@ -1,36 +1,113 @@
-body {
-    font-family: Arial;
-    text-align: center;
-    background: linear-gradient(to right, #141e30, #243b55);
-    color: white;
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#0f172a;
+    color:white;
 }
 
-input, select {
-    padding: 10px;
-    margin: 10px;
+input,
+select{
+    padding:12px;
+    margin:8px;
+    border:none;
+    border-radius:8px;
+    width:220px;
 }
 
-button {
-    padding: 10px 20px;
-    cursor: pointer;
+button{
+    padding:12px 20px;
+    margin:8px;
+    border:none;
+    border-radius:8px;
+    background:#7c3aed;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
 }
 
-.card {
-    background: white;
-    color: black;
-    margin: 10px auto;
-    width: 300px;
-    padding: 10px;
-    border-radius: 10px;
-}
-.card img {
-    border-radius: 10px;
-    margin-bottom: 10px;
+button:hover{
+    background:#5b21b6;
 }
 
-.card {
-    display: inline-block;
-    margin: 10px;
-    padding: 10px;
-    width: 180px;
+.section-title{
+    margin-top:40px;
+    margin-bottom:15px;
+    padding-left:15px;
+    text-align:left;
+}
+
+/* Netflix Style Movie Rows */
+.movie-grid{
+    display:flex;
+    overflow-x:auto;
+    gap:20px;
+    padding:15px;
+    scroll-behavior:smooth;
+}
+
+.movie-grid::-webkit-scrollbar{
+    height:8px;
+}
+
+.movie-grid::-webkit-scrollbar-thumb{
+    background:#7c3aed;
+    border-radius:10px;
+}
+
+/* Movie Card */
+.card{
+    min-width:220px;
+    max-width:220px;
+    background:white;
+    color:black;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 4px 10px rgba(0,0,0,0.4);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:scale(1.08);
+    box-shadow:0 0 20px #7c3aed;
+}
+
+.card img{
+    width:100%;
+    height:330px;
+    object-fit:cover;
+}
+
+.card-body{
+    padding:12px;
+}
+
+.card h3{
+    margin:10px 0;
+    font-size:16px;
+}
+
+.rating{
+    color:green;
+    font-weight:bold;
+}
+
+/* Search Suggestions */
+#suggestions{
+    background:white;
+    color:black;
+    width:220px;
+    margin:auto;
+    border-radius:5px;
+    max-height:200px;
+    overflow-y:auto;
+}
+
+#suggestions div{
+    padding:10px;
+    cursor:pointer;
+    border-bottom:1px solid #ddd;
+}
+
+#suggestions div:hover{
+    background:#f1f1f1;
 }

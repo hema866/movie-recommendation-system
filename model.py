@@ -182,10 +182,10 @@ def mood_recommend(mood):
         data = movies
 
     # Select up to 10 random movies
-    if len(data) > 10:
-        data = data.sample(n=10)
-    else:
-        data = data.sample(frac=1)
+    data = data.sort_values(
+        by='Rating',
+        ascending=False
+    ).head(10)
 
     print(f"\nSelected Mood: {mood}")
     print(data[['Title', 'Genre']])

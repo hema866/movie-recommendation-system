@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-
+from poster import fetch_poster
 from model import (
     recommend,
     mood_recommend,
@@ -7,7 +7,8 @@ from model import (
     top_movies,
     trending_movies,
     search_movies,
-    advanced_filter
+    advanced_filter,
+    movies
 )
 
 app = Flask(__name__)
@@ -54,6 +55,7 @@ def mood():
 
     return jsonify(result)
 
+
 # -----------------------------
 # HYBRID RECOMMENDATION
 # -----------------------------
@@ -75,14 +77,62 @@ def hybrid():
 
 
 # -----------------------------
+# MOVIE INFO
+# -----------------------------
+@app.route('/movieinfo')
+def movie_info():
+
+    movie = request.args.get('movie')
+
+    if not movie:
+        return jsonify({})
+
+    data = movies[
+        movies['Title'].str.lower()
+        ==
+        movie.lower()
+    ]
+
+    if data.empty:
+        return jsonify({})
+
+    row = data.iloc[0]
+
+    return jsonify({
+
+        "Title": row['Title'],
+        "Genre": row['Genre'],
+        "Language": row['Language'],
+        "Rating": row['Rating'],
+        "Poster": fetch_poster(
+            row['Title']
+        )
+
+    })
+
+
+# -----------------------------
 # TOP RATED MOVIES
 # -----------------------------
 @app.route('/top')
 def top():
 
+    page = int(request.args.get('page', 1))
+    per_page = 5
+
     result = top_movies()
 
-    return jsonify(result)
+    total_movies = len(result)
+
+    start = (page - 1) * per_page
+    end = start + per_page
+
+    return jsonify({
+        "movies": result[start:end],
+        "current_page": page,
+        "total_movies": total_movies,
+        "has_more": end < total_movies
+    })
 
 
 # -----------------------------
@@ -91,9 +141,22 @@ def top():
 @app.route('/trending')
 def trending():
 
+    page = int(request.args.get('page', 1))
+    per_page = 5
+
     result = trending_movies()
 
-    return jsonify(result)
+    total_movies = len(result)
+
+    start = (page - 1) * per_page
+    end = start + per_page
+
+    return jsonify({
+        "movies": result[start:end],
+        "current_page": page,
+        "total_movies": total_movies,
+        "has_more": end < total_movies
+    })
 
 
 # -----------------------------
@@ -132,11 +195,48 @@ def filter_movies():
 
 
 # -----------------------------
-# RUN APP
+# GENRE MOVIES WITH PAGINATION
 # -----------------------------
-# -----------------------------
-# RUN APP
-# -----------------------------
+@app.route('/genre/<genre>')
+def genre_movies(genre):
+
+    page = int(request.args.get('page', 1))
+    per_page = 5
+
+    filtered_movies = movies[
+        movies['Genre'].str.contains(
+            genre,
+            case=False,
+            na=False
+        )
+    ]
+
+    total_movies = len(filtered_movies)
+
+    start = (page - 1) * per_page
+    end = start + per_page
+
+    page_movies = filtered_movies.iloc[start:end]
+
+    result = []
+
+    for _, row in page_movies.iterrows():
+
+        result.append({
+            "Title": row["Title"],
+            "Genre": row["Genre"],
+            "Language": row.get("Language", ""),
+            "Rating": row.get("Rating", ""),
+            "Poster": fetch_poster(row["Title"])
+        })
+
+    return jsonify({
+        "movies": result,
+        "current_page": page,
+        "total_movies": total_movies,
+        "has_more": end < total_movies
+    })
+
 # -----------------------------
 # RUN APP
 # -----------------------------
