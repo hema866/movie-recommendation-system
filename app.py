@@ -10,6 +10,7 @@ from model import (
     advanced_filter,
     movies
 )
+print(movies.columns.tolist())
 
 app = Flask(__name__)
 
@@ -110,6 +111,98 @@ def movie_info():
 
     })
 
+mood_mapping = {
+    "Happy": ["Comedy"],
+    "Sad": ["Drama"],
+    "Romantic": ["Romance"],
+    "Excited": ["Action", "Adventure"]
+}
+
+def filter_movies(mood, language, rating, year):
+
+    filtered = movies.copy()
+
+    print("Initial:", len(filtered))
+
+    if mood:
+        genres = mood_mapping.get(mood, [])
+
+        filtered = filtered[
+            filtered['Genre'].apply(
+                lambda x: any(
+                    g.lower() in str(x).lower()
+                    for g in genres
+                )
+            )
+        ]
+
+        print("After Mood:", len(filtered))
+
+    if language:
+        filtered = filtered[
+            filtered['Language'].astype(str).str.lower()
+            == language.lower()
+        ]
+
+        print("After Language:", len(filtered))
+
+    if rating:
+        filtered = filtered[
+            filtered['Rating'] >= float(rating)
+        ]
+
+        print("After Rating:", len(filtered))
+    print("Movies before Year filter:")
+    print(filtered[['Title', 'Year']].head(30))
+
+    print("Year datatype:", filtered['Year'].dtype)
+    print("Max year:", filtered['Year'].max())
+    print("Min year:", filtered['Year'].min())
+    if year:
+        filtered = filtered[
+            filtered['Year'] >= float(year)
+        ]
+
+        print("After Year:", len(filtered))
+
+    return filtered.head(20)
+
+@app.route('/filter')
+def filter_route():
+
+    mood = request.args.get('mood')
+    language = request.args.get('language')
+    rating = request.args.get('rating')
+    year = request.args.get('year')
+
+    results = filter_movies(
+        mood,
+        language,
+        rating,
+        year
+    )
+
+    print("Mood:", mood)
+    print("Language:", language)
+    print("Rating:", rating)
+    print("Year:", year)
+
+    print("Results Found:", len(results))
+    print(results.head())
+
+    movies = []
+
+    for _, row in results.iterrows():
+
+        movies.append({
+            "Title": row["Title"],
+            "Genre": row["Genre"],
+            "Language": row["Language"],
+            "Rating": row["Rating"],
+            "Poster": "https://via.placeholder.com/300x450?text=Movie"
+        })
+
+    return jsonify(movies)
 
 # -----------------------------
 # TOP RATED MOVIES
@@ -174,24 +267,6 @@ def search():
 
     return jsonify(result)
 
-
-# -----------------------------
-# ADVANCED FILTER
-# -----------------------------
-@app.route('/filter')
-def filter_movies():
-
-    language = request.args.get('language')
-    rating = request.args.get('rating')
-    year = request.args.get('year')
-
-    result = advanced_filter(
-        language=language,
-        min_rating=rating,
-        year=year
-    )
-
-    return jsonify(result)
 
 
 # -----------------------------

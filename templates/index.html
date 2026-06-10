@@ -182,13 +182,10 @@
 
         <option value="">Mood</option>
 
-        <option value="happy">Happy 😊</option>
-
-        <option value="sad">Sad 😢</option>
-
-        <option value="romantic">Romantic ❤️</option>
-
-        <option value="action">Action 🔥</option>
+        <option value="Happy">Happy 😊</option>
+        <option value="Sad">Sad 😢</option>
+        <option value="Romantic">Romantic ❤️</option>
+        <option value="Excited">Action 🔥</option>
 
     </select>
 
@@ -545,23 +542,20 @@ function getRatingMovies(){
 
 function applyFilters(){
 
+    let mood =
+        document.getElementById("mood").value;
+
     let language =
-        document.getElementById(
-            "language"
-        ).value;
+        document.getElementById("language").value;
 
     let year =
-        document.getElementById(
-            "year"
-        ).value;
+        document.getElementById("year").value;
 
     let rating =
-        document.getElementById(
-            "rating"
-        ).value;
+        document.getElementById("rating").value;
 
     fetch(
-        `/filter?language=${language}&year=${year}&rating=${rating}`
+        `/filter?mood=${mood}&language=${language}&year=${year}&rating=${rating}`
     )
 
     .then(res=>res.json())
@@ -576,7 +570,6 @@ function applyFilters(){
     });
 
 }
-
 
 function loadTop(reset=false){
 
