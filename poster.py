@@ -1,33 +1,75 @@
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 API_KEY = "9be2139eb7649fcf61b7477464a8269c"
 
+# Store previously fetched posters
+poster_cache = {}
+
+# Create a session with automatic retries
+session = requests.Session()
+
+retry_strategy = Retry(
+    total=3,
+    connect=3,
+    read=2,
+    backoff_factor=1,
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["GET"]
+)
+
+adapter = HTTPAdapter(max_retries=retry_strategy)
+
+session.mount("https://", adapter)
+
+
 def fetch_poster(movie_name):
 
-    print("Searching:", movie_name)
+    if not movie_name:
+        return "https://placehold.co/300x450?text=No+Poster"
 
-    url = f"https://api.themoviedb.org/3/search/movie?api_key={API_KEY}&query={movie_name}"
+    if movie_name in poster_cache:
+        return poster_cache[movie_name]
+
+    url = "https://api.themoviedb.org/3/search/movie"
+
+    params = {
+        "api_key": API_KEY,
+        "query": movie_name
+    }
 
     try:
-        response = requests.get(url, timeout=5)
+        response = session.get(
+            url,
+            params=params,
+            timeout=20
+        )
 
-        print("Status:", response.status_code)
+        response.raise_for_status()
 
         data = response.json()
 
-        print(data)
+        results = data.get("results", [])
 
-        if data.get("results"):
-
-            poster_path = data["results"][0].get("poster_path")
+        if results:
+            poster_path = results[0].get("poster_path")
 
             if poster_path:
-                return "https://image.tmdb.org/t/p/w500" + poster_path
+                poster_url = (
+                    "https://image.tmdb.org/t/p/w500"
+                    + poster_path
+                )
 
-        return "https://via.placeholder.com/300x450?text=No+Poster"
+                poster_cache[movie_name] = poster_url
 
-    except Exception as e:
+                return poster_url
 
-        print("TMDB Error:", e)
+    except requests.exceptions.RequestException as e:
+        print("TMDB API Error:", e)
 
-        return "https://via.placeholder.com/300x450?text=No+Poster"
+    placeholder = "https://placehold.co/300x450?text=No+Poster"
+
+    poster_cache[movie_name] = placeholder
+
+    return placeholder

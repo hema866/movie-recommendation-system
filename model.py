@@ -6,9 +6,18 @@ from poster import fetch_poster
 # -----------------------------
 # LOAD DATASET
 # -----------------------------
-file_path = os.path.join("dataset", "indian_movies.csv")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+file_path = os.path.join(
+    BASE_DIR,
+    "dataset",
+    "indian_movies.csv"
+)
 
 movies = pd.read_csv(file_path)
+
+print("Dataset loaded successfully!")
+print("Total movies:", len(movies))
 
 # -----------------------------
 # CLEAN DATA
@@ -138,11 +147,20 @@ def recommend(movie):
 # -----------------------------
 # MOOD RECOMMEND
 # -----------------------------
+# -----------------------------
+# MOOD RECOMMEND
+# -----------------------------
+
 def mood_recommend(mood):
+
+    if not mood:
+        return []
 
     mood = mood.lower().strip()
 
+    # Select movies based on mood
     if mood == "happy":
+
         data = movies[
             movies['Genre'].str.contains(
                 "Comedy|Family",
@@ -152,6 +170,7 @@ def mood_recommend(mood):
         ]
 
     elif mood == "sad":
+
         data = movies[
             movies['Genre'].str.contains(
                 "Drama",
@@ -161,6 +180,7 @@ def mood_recommend(mood):
         ]
 
     elif mood == "romantic":
+
         data = movies[
             movies['Genre'].str.contains(
                 "Romance",
@@ -170,6 +190,7 @@ def mood_recommend(mood):
         ]
 
     elif mood == "action":
+
         data = movies[
             movies['Genre'].str.contains(
                 "Action",
@@ -179,27 +200,25 @@ def mood_recommend(mood):
         ]
 
     else:
-        data = movies
+        return []
 
     # Select up to 10 random movies
-    data = data.sort_values(
-        by='Rating',
-        ascending=False
-    ).head(10)
-
-    print(f"\nSelected Mood: {mood}")
-    print(data[['Title', 'Genre']])
+    data = data.sample(
+        n=min(10, len(data))
+    )
 
     result = []
 
     for _, row in data.iterrows():
 
         result.append({
+
             "Title": row['Title'],
             "Genre": row['Genre'],
             "Language": row['Language'],
             "Rating": row['Rating'],
             "Poster": fetch_poster(row['Title'])
+
         })
 
     return result
@@ -208,33 +227,57 @@ def mood_recommend(mood):
 # -----------------------------
 # HYBRID RECOMMEND
 # -----------------------------
+# -----------------------------
+# HYBRID RECOMMEND
+# -----------------------------
+
 def hybrid_recommend(movie, mood):
 
+    # Check empty inputs
+    if not movie or not movie.strip():
+        return []
+
+    if not mood or not mood.strip():
+        return []
+
+    # Get similar movies
     similar_movies = recommend(movie)
 
+    # Get mood-based movies
     mood_movies = mood_recommend(mood)
 
+    # If no similar movies are found
+    if not similar_movies:
+        return mood_movies[:10]
+
+    # If no mood movies are found
+    if not mood_movies:
+        return similar_movies[:5]
+
+    # Get titles of mood movies
     mood_titles = [
-        m["Title"]
+        m["Title"].lower()
         for m in mood_movies
     ]
 
     final_movies = []
 
+    # Find movies matching both conditions
     for movie_data in similar_movies:
 
-        if movie_data["Title"] in mood_titles:
+        if movie_data["Title"].lower() in mood_titles:
 
             final_movies.append(movie_data)
 
-    if len(final_movies) == 0:
+    # If no common movies are found
+    if not final_movies:
 
         final_movies = similar_movies[:5]
 
         for mood_movie in mood_movies:
 
-            if mood_movie["Title"] not in [
-                m["Title"]
+            if mood_movie["Title"].lower() not in [
+                m["Title"].lower()
                 for m in final_movies
             ]:
 
@@ -243,74 +286,82 @@ def hybrid_recommend(movie, mood):
             if len(final_movies) >= 10:
                 break
 
-    return final_movies
+    return final_movies[:20]
 
 # -----------------------------
 # LANGUAGE FILTER
 # -----------------------------
+# -----------------------------
+# LANGUAGE FILTER
+# -----------------------------
+
 def language_filter(language):
+
+    if not language or not language.strip():
+        return []
 
     data = movies[
         movies['Language']
+        .fillna('')
+        .str.strip()
         .str.lower()
         ==
-        language.lower()
+        language.strip().lower()
     ]
 
     return data[
-        ['Title',
-         'Language',
-         'Genre',
-         'Rating']
-    ].head(20)
+        ['Title', 'Language', 'Genre', 'Rating']
+    ].head(20).to_dict('records')
 
 
 # -----------------------------
 # RATING FILTER
 # -----------------------------
+
 def rating_filter(min_rating):
 
+    try:
+        min_rating = float(min_rating)
+    except (ValueError, TypeError):
+        return []
+
     data = movies[
-        movies['Rating']
-        >= min_rating
+        movies['Rating'] >= min_rating
     ]
 
     return data[
-        ['Title',
-         'Genre',
-         'Language',
-         'Rating']
+        ['Title', 'Genre', 'Language', 'Rating']
     ].sort_values(
         by='Rating',
         ascending=False
-    ).head(20)
-
+    ).head(20).to_dict('records')
 
 # -----------------------------
 # YEAR FILTER
 # -----------------------------
+
 def year_filter(min_year):
 
+    try:
+        min_year = int(min_year)
+    except (ValueError, TypeError):
+        return []
+
     data = movies[
-        movies['Year']
-        >= min_year
+        movies['Year'] >= min_year
     ]
 
     return data[
-        ['Title',
-         'Year',
-         'Genre',
-         'Language',
-         'Rating']
+        ['Title', 'Year', 'Genre', 'Language', 'Rating']
     ].sort_values(
         by='Year',
         ascending=False
-    ).head(20)
-
+    ).head(20).to_dict('records')
 
 # -----------------------------
 # ADVANCED FILTER
 # -----------------------------
+
 def advanced_filter(
         language=None,
         min_rating=None,
@@ -318,44 +369,62 @@ def advanced_filter(
 
     data = movies.copy()
 
-    if language:
+    # Filter by language
+    if language and language.strip():
 
         data = data[
             data['Language']
+            .fillna('')
+            .str.strip()
             .str.lower()
             ==
-            language.lower()
+            language.strip().lower()
         ]
 
-    if min_rating:
+    # Filter by minimum rating
+    if min_rating is not None and min_rating != '':
 
-        data = data[
-            data['Rating']
-            >= float(min_rating)
-        ]
+        try:
+            min_rating = float(min_rating)
 
-    if year:
+            data = data[
+                data['Rating'] >= min_rating
+            ]
 
-        data = data[
-            data['Year']
-            >= int(year)
-        ]
+        except (ValueError, TypeError):
+            return []
 
-    return data[
-        ['Title',
-         'Language',
-         'Genre',
-         'Rating',
-         'Year']
-    ].sort_values(
+    # Filter by release year
+    if year is not None and year != '':
+
+        try:
+            year = int(year)
+
+            data = data[
+                data['Year'] >= year
+            ]
+
+        except (ValueError, TypeError):
+            return []
+
+    # Sort results by rating
+    data = data.sort_values(
         by='Rating',
         ascending=False
-    ).head(20).to_dict('records')
+    )
+
+    return data[
+        ['Title', 'Language', 'Genre', 'Rating', 'Year']
+    ].head(20).to_dict('records')
 
 
 # -----------------------------
 # TOP MOVIES
 # -----------------------------
+# -----------------------------
+# TOP MOVIES
+# -----------------------------
+
 def top_movies():
 
     data = movies.sort_values(
@@ -383,6 +452,10 @@ def top_movies():
 # -----------------------------
 # TRENDING MOVIES
 # -----------------------------
+# -----------------------------
+# TRENDING MOVIES
+# -----------------------------
+
 def trending_movies():
 
     data = movies.sort_values(
@@ -412,17 +485,18 @@ def trending_movies():
 # -----------------------------
 def search_movies(query):
 
+    if not query or not query.strip():
+        return []
+
     data = movies[
-        movies['Title']
-        .str.contains(
+        movies['Title'].str.contains(
             query,
             case=False,
-            na=False
+            na=False,
+            regex=False
         )
     ]
 
     return data[
-        ['Title',
-         'Language',
-         'Rating']
+        ['Title', 'Language', 'Rating']
     ].head(10).to_dict('records')
